@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retro Aero Dodge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">🚀</span> RETRO <em>AERO DODGE</em></div>
+      <div class="hud">
+        <span class="hud-item">SCORE <strong id="score">0</strong></span>
+        <span class="hud-item">BEST <strong id="best">0</strong></span>
+      </div>
+    </header>
+    <section class="board-wrap">
+      <canvas id="gameCanvas" width="420" height="620"></canvas>
+      <div id="overlay" class="overlay">
+        <p class="eyebrow">TAP TO FLY</p>
+        <h1>RETRO<br><span>AERO DODGE</span></h1>
+        <p class="overlay-copy">Tap, click or press Space to boost your rocket.<br>Dodge the incoming obstacles!</p>
+        <button id="startButton" class="primary-button">Launch 🚀</button>
+        <p class="hint">Tap screen / <kbd>Space</kbd> / Click to flap</p>
+      </div>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

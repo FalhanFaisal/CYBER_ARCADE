@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Invaders</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">👾</span> CYBER <em>INVADERS</em></div>
+      <div class="hud">
+        <span class="hud-item">SCORE <strong id="score">0</strong></span>
+        <span class="hud-item">BEST <strong id="best">0</strong></span>
+        <span class="hud-item">LEVEL <strong id="level">1</strong></span>
+        <span class="hud-item">LIVES <strong id="lives">❤️❤️❤️</strong></span>
+      </div>
+    </header>
+    <section class="board-wrap">
+      <canvas id="gameCanvas" width="800" height="560"></canvas>
+      <div id="overlay" class="overlay">
+        <p class="eyebrow">READY PLAYER ONE</p>
+        <h1>CYBER<br><span>INVADERS</span></h1>
+        <p class="overlay-copy">Destroy the alien fleet before they reach the ground.<br>Watch out — they speed up as you clear them!</p>
+        <button id="startButton" class="primary-button">Start Mission <span>→</span></button>
+        <p class="hint">Move: <kbd>← →</kbd> or <kbd>A D</kbd> &nbsp;|&nbsp; Fire: <kbd>Space</kbd> or tap screen</p>
+      </div>
+    </section>
+    <footer class="controls-bar">
+      <div class="mobile-controls">
+        <button class="ctrl-btn" id="leftBtn">◀</button>
+        <button class="ctrl-btn fire-btn" id="fireBtn">🔥 FIRE</button>
+        <button class="ctrl-btn" id="rightBtn">▶</button>
+      </div>
+    </footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

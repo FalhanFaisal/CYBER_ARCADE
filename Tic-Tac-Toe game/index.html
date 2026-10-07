@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe Pro</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="background"></div>
+
+<div class="container">
+
+    <header>
+
+        <h1>Tic Tac Toe</h1>
+
+        <p class="subtitle">
+            Play against your friend or challenge the AI
+        </p>
+
+    </header>
+
+    <!-- MODE -->
+
+    <section class="mode-panel">
+
+        <button id="singleBtn" class="mode-btn active">
+            🤖 Single Player
+        </button>
+
+        <button id="multiBtn" class="mode-btn">
+            👥 Two Players
+        </button>
+
+    </section>
+
+    <!-- AI Difficulty -->
+
+    <section id="difficultyBox">
+
+        <label>
+
+            AI Difficulty
+
+            <select id="difficulty">
+
+                <option value="easy">
+
+                    Easy
+
+                </option>
+
+                <option value="hard">
+
+                    Hard
+
+                </option>
+
+            </select>
+
+        </label>
+
+    </section>
+
+    <!-- SCORE -->
+
+    <section class="scoreboard">
+
+        <div class="score-card">
+
+            <h2>X</h2>
+
+            <span id="scoreX">0</span>
+
+        </div>
+
+        <div class="score-card">
+
+            <h2>Draw</h2>
+
+            <span id="scoreDraw">0</span>
+
+        </div>
+
+        <div class="score-card">
+
+            <h2>O</h2>
+
+            <span id="scoreO">0</span>
+
+        </div>
+
+    </section>
+
+    <!-- STATUS -->
+
+    <div id="status">
+
+        X Turn
+
+    </div>
+
+    <!-- BOARD -->
+
+    <section class="board" id="board">
+
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+
+    </section>
+
+    <!-- BUTTONS -->
+
+    <section class="controls">
+
+        <button id="restartBtn">
+
+            🔄 Restart
+
+        </button>
+
+        <button id="newGameBtn">
+
+            🎮 New Game
+
+        </button>
+
+        <button id="resetScoreBtn">
+
+            🗑 Reset Score
+
+        </button>
+
+    </section>
+
+</div>
+
+<!-- WIN POPUP -->
+
+<div id="popup" class="popup hidden">
+
+    <div class="popup-box">
+
+        <h2 id="popupText">
+
+            Winner
+
+        </h2>
+
+        <button id="closePopup">
+
+            Continue
+
+        </button>
+
+    </div>
+
+</div>
+
+<!-- AUDIO -->
+
+<!-- <audio id="clickSound" src="assets/click.mp3"></audio>
+<audio id="winSound" src="assets/win.mp3"></audio>
+<audio id="drawSound" src="assets/draw.mp3"></audio> -->
+
+<script src="script.js"></script>
+
+</body>
+</html>

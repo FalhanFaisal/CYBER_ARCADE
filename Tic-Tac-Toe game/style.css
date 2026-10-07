@@ -1,0 +1,376 @@
+:root {
+  --ink: #f3f1fd;
+  --muted: #9f9bbd;
+  --purple: #b92bcf;
+  --purple-dark: #6952d7;
+  --coral: #ff0844;
+  --yellow: #f6d365;
+  --green: #00f2fe;
+  --line: rgba(255, 255, 255, 0.08);
+  --paper: #161330;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(8px, 2.5vh, 26px) 15px;
+  color: var(--ink);
+  font-family: Nunito, Arial, sans-serif;
+  background: radial-gradient(circle at top, #14112e, #080614 85%);
+}
+
+.background {
+  position: fixed;
+  z-index: -1;
+  width: 230px;
+  height: 230px;
+  left: -85px;
+  bottom: 7%;
+  border-radius: 50%;
+  background: rgba(185, 43, 207, 0.15);
+  filter: blur(40px);
+  animation: float 9s ease-in-out infinite;
+}
+
+.container {
+  width: min(100%, 720px);
+  padding: 38px;
+  background: rgba(22, 19, 48, 0.75);
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+header {
+  text-align: center;
+  margin-bottom: 27px;
+}
+
+header h1 {
+  font-family: "Baloo 2", sans-serif;
+  font-size: 46px;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--green), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 15px rgba(0, 242, 254, 0.25);
+}
+
+.subtitle {
+  margin-top: 9px;
+  color: var(--muted);
+}
+
+.mode-panel {
+  display: flex;
+  gap: 11px;
+  margin-bottom: 18px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 13px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--muted);
+  font: 800 15px Nunito, Arial;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-btn:hover, .mode-btn.active {
+  border-color: var(--purple);
+  background: rgba(185, 43, 207, 0.08);
+  color: var(--ink);
+  box-shadow: 0 0 15px rgba(185, 43, 207, 0.3);
+  transform: translateY(-2px);
+}
+
+#difficultyBox {
+  display: flex;
+  justify-content: center;
+  margin: 18px 0;
+}
+
+#difficultyBox label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 14px;
+}
+
+#difficulty {
+  padding: 8px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: #090812;
+  color: var(--ink);
+  font: 700 14px Nunito;
+  outline: none;
+}
+
+#difficulty:focus {
+  border-color: var(--green);
+}
+
+.scoreboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 11px;
+  margin: 22px 0;
+}
+
+.score-card {
+  padding: 13px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+}
+
+.score-card h2 {
+  font-size: 15px;
+  margin-bottom: 3px;
+  font-family: "Baloo 2", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.score-card span {
+  font: 800 27px "Baloo 2", sans-serif;
+}
+
+.score-card:nth-child(1) {
+  color: var(--green);
+  text-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+}
+
+.score-card:nth-child(2) {
+  color: var(--yellow);
+  text-shadow: 0 0 10px rgba(246, 211, 101, 0.4);
+}
+
+.score-card:nth-child(3) {
+  color: var(--coral);
+  text-shadow: 0 0 10px rgba(255, 8, 68, 0.4);
+}
+
+#status {
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto 20px;
+  padding: 9px 20px;
+  border-radius: 999px;
+  background: rgba(0, 242, 254, 0.08);
+  color: var(--green);
+  font-weight: 800;
+  border: 1px solid rgba(0, 242, 254, 0.2);
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.1);
+  animation: pulse 2s infinite;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: min(100%, 500px);
+  margin: 0 auto 27px;
+}
+
+.cell {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  color: var(--purple);
+  font: 800 clamp(48px, 11vw, 76px) "Baloo 2", sans-serif;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.cell:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 22px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.cell:active {
+  transform: scale(0.96);
+}
+
+.cell.x {
+  color: var(--green);
+  text-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
+  animation: pop 0.25s ease;
+}
+
+.cell.o {
+  color: var(--coral);
+  text-shadow: 0 0 15px rgba(255, 8, 68, 0.5);
+  animation: pop 0.25s ease;
+}
+
+.cell.win {
+  background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+  border-color: #fff;
+  color: #fff;
+  text-shadow: 0 0 10px #fff;
+  animation: winner 0.8s infinite alternate;
+}
+
+.board.disabled {
+  pointer-events: none;
+  opacity: 0.88;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.controls button, .popup-box button {
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 13px;
+  cursor: pointer;
+  color: #000;
+  background: linear-gradient(135deg, var(--green), #00c6ff);
+  box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+  font: 800 14px Nunito;
+  transition: all 0.15s ease;
+}
+
+.controls button:hover, .popup-box button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.15);
+}
+
+.controls button:active, .popup-box button:active {
+  transform: translateY(1px);
+}
+
+#newGameBtn {
+  background: linear-gradient(135deg, var(--purple), #89216b);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(185, 43, 207, 0.3);
+}
+
+#resetScoreBtn {
+  background: linear-gradient(135deg, var(--coral), #b20a2c);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(255, 8, 68, 0.3);
+}
+
+.popup {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 15px;
+  background: rgba(10, 9, 21, 0.85);
+  backdrop-filter: blur(5px);
+  z-index: 9;
+}
+
+.popup.hidden {
+  display: none;
+}
+
+.popup-box {
+  width: min(100%, 360px);
+  padding: 34px;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--paper);
+  box-shadow: 0 20px 70px rgba(0,0,0,0.6);
+  animation: popupShow 0.35s ease;
+}
+
+.popup-box h2 {
+  margin-bottom: 23px;
+  font: 800 34px "Baloo 2", sans-serif;
+  color: var(--green);
+  text-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+}
+
+@keyframes pop {
+  0% { transform: scale(0.2); opacity: 0; }
+  70% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes winner {
+  to { transform: scale(1.04); box-shadow: 0 0 24px rgba(185, 43, 207, 0.6); }
+}
+
+@keyframes pulse {
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes popupShow {
+  from { opacity: 0; transform: translateY(-20px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes float {
+  50% { transform: translateY(-25px) translateX(13px); }
+}
+
+@media (max-width: 560px) {
+  body {
+    padding: 15px;
+  }
+  .container {
+    padding: 28px 18px;
+    border-radius: 24px;
+  }
+  header h1 {
+    font-size: 38px;
+  }
+  .mode-panel {
+    flex-direction: column;
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .controls button {
+    width: 100%;
+  }
+  .board {
+    gap: 9px;
+  }
+  .cell {
+    border-radius: 15px;
+  }
+  .scoreboard {
+    gap: 8px;
+  }
+}

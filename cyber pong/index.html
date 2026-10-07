@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Pong</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">🏓</span> CYBER <em>PONG</em></div>
+      <div class="score-display">
+        <span class="score-block player-score"><span>YOU</span><strong id="scoreLeft">0</strong></span>
+        <span class="score-sep">:</span>
+        <span class="score-block ai-score"><span>A.I.</span><strong id="scoreRight">0</strong></span>
+      </div>
+      <div class="info-block"><span id="statusMsg">Press Start</span></div>
+      <button id="pauseButton" class="pause-button" aria-label="Pause game" disabled>⏸</button>
+    </header>
+    <section class="board-wrap">
+      <canvas id="gameCanvas" width="800" height="500"></canvas>
+      <div id="overlay" class="overlay">
+        <p class="eyebrow">PLAYER VS A.I.</p>
+        <h1>CYBER<br><span>PONG</span></h1>
+        <p class="overlay-copy">First to <strong>7 points</strong> wins.<br>Move your paddle with the mouse or W/S keys.</p>
+        <button id="startButton" class="primary-button">Start Match <span>→</span></button>
+        <p class="hint">Mouse / Touch &nbsp;|&nbsp; <kbd>W</kbd> <kbd>S</kbd> or <kbd>↑</kbd> <kbd>↓</kbd></p>
+      </div>
+      <div id="pauseOverlay" class="overlay pause-overlay hidden">
+        <p class="eyebrow">PAUSED</p>
+        <h1>GAME<br><span>PAUSED</span></h1>
+        <button id="resumeButton" class="primary-button">Resume <span>→</span></button>
+      </div>
+    </section>
+    <footer class="controls-bar">
+      <div class="mobile-controls">
+        <button class="ctrl-btn" id="upBtn">▲ Up</button>
+        <button class="ctrl-btn" id="downBtn">▼ Down</button>
+      </div>
+    </footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

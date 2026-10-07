@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Neon Highway</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; overflow: hidden; background: radial-gradient(circle at top, #263451, #080b12 70%); font-family: Arial, sans-serif; }
+    .game-shell { position: relative; width: min(92vw, 400px); aspect-ratio: 4 / 7; border: 4px solid #dce7ff; border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 5px #1a2234, 0 22px 60px #0009; }
+    canvas { display: block; width: 100%; height: 100%; }
+    .hud { position: absolute; inset: 0 0 auto; display: flex; justify-content: space-between; gap: 5px; padding: 15px; color: white; font-weight: 700; font-size: clamp(12px, 3.5vw, 18px); text-shadow: 0 2px 3px #000; pointer-events: none; }
+    .hud span { background: #0b1220bb; border: 1px solid #ffffff33; border-radius: 999px; padding: 7px 11px; }
+    .overlay { position: absolute; inset: 0; display: grid; place-items: center; padding: 28px; text-align: center; background: #07101bd9; color: white; }
+    .overlay[hidden] { display: none; }
+    .panel { padding: 26px 18px; border: 1px solid #ffffff33; border-radius: 16px; background: #17223ad9; box-shadow: 0 12px 35px #0008; }
+    h1 { margin: 0 0 12px; font-size: 34px; letter-spacing: 1px; color: #54d7ff; }
+    p { margin: 8px 0; color: #d9e5ff; line-height: 1.45; }
+    button { margin-top: 16px; padding: 11px 22px; border: 0; border-radius: 999px; background: #54d7ff; color: #07101b; font-weight: 800; font-size: 16px; cursor: pointer; }
+    button:hover { background: #a8ecff; }
+    .controls { position: absolute; inset: auto 0 13px; display: flex; justify-content: space-between; padding: 0 18px; }
+    .move-button { width: 62px; height: 54px; margin: 0; border: 1px solid #ffffff66; border-radius: 14px; background: #101b2dcc; color: white; font-size: 30px; line-height: 1; touch-action: manipulation; }
+    .move-button:active { transform: scale(.94); background: #54d7ff; color: #07101b; }
+    .garage-button { margin-top: 10px; background: transparent; color: #54d7ff; border: 1px solid #54d7ff; font-size: 14px; }
+    .shop { position: absolute; inset: 0; z-index: 2; overflow: auto; padding: 28px 18px; background: #07101bf2; color: white; text-align: center; }
+    .shop[hidden] { display: none; }
+    .shop h2 { margin: 8px 0; color: #54d7ff; }
+    .shop-coins { color: #ffd43b; font-weight: bold; }
+    .car-options { display: grid; gap: 10px; margin: 20px 0; }
+    .car-option { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; border: 1px solid #ffffff33; border-radius: 12px; background: #17223a; text-align: left; }
+    .car-preview { width: 44px; height: 60px; border-radius: 8px; flex: 0 0 auto; }
+    .car-option button { margin: 0; padding: 8px 12px; font-size: 13px; }
+    .close-button { background: transparent; border: 1px solid #ffffff66; color: white; }
+  </style>
+</head>
+<body>
+  <main class="game-shell">
+    <canvas id="game" width="400" height="700" aria-label="Neon Highway driving game"></canvas>
+    <div class="hud"><span id="score">Score: 0</span><span id="coins">Coins: 0</span><span id="totalCoins">Total: 0</span><span id="best">Best: 0</span></div>
+    <div class="controls" aria-label="Movement controls">
+      <button class="move-button" id="leftButton" aria-label="Move left">&#8592;</button>
+      <button class="move-button" id="rightButton" aria-label="Move right">&#8594;</button>
+    </div>
+    <div id="overlay" class="overlay">
+      <div class="panel">
+        <h1 id="title">NEON HIGHWAY</h1>
+        <p id="message">Dodge traffic and stay on the road.</p>
+        <p>Use <b>&larr; &rarr;</b> or <b>A D</b> to steer.</p>
+        <button id="startButton">Start driving</button>
+        <button id="garageButton" class="garage-button">Garage</button>
+      </div>
+    </div>
+    <section id="shop" class="shop" hidden aria-label="Car garage">
+      <h2>CAR GARAGE</h2>
+      <p class="shop-coins" id="shopCoins">Total coins: 0</p>
+      <div id="carOptions" class="car-options"></div>
+      <button id="closeShop" class="close-button">Close</button>
+    </section>
+  </main>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const coinsEl = document.getElementById('coins');
+    const totalCoinsEl = document.getElementById('totalCoins');
+    const bestEl = document.getElementById('best');
+    const overlay = document.getElementById('overlay');
+    const titleEl = document.getElementById('title');
+    const messageEl = document.getElementById('message');
+    const startButton = document.getElementById('startButton');
+    const garageButton = document.getElementById('garageButton');
+    const shop = document.getElementById('shop');
+    const shopCoinsEl = document.getElementById('shopCoins');
+    const carOptions = document.getElementById('carOptions');
+    const closeShop = document.getElementById('closeShop');
+    const leftButton = document.getElementById('leftButton');
+    const rightButton = document.getElementById('rightButton');
+
+    const lanes = [25, 125, 225, 325];
+    let player, cars, coins, score, coinCount, roadY, lastTime, spawnTimer, coinTimer, running;
+    let bestScore = Number(localStorage.getItem('neonHighwayBest') || 0);
+    let totalCoins = Number(localStorage.getItem('neonHighwayCoins') || 0);
+    const garageCars = [
+      { id: 'blue', name: 'Sky Blue', color: '#35cfff', price: 0 },
+      { id: 'sunset', name: 'Sunset Red', color: '#ff4e73', price: 10 },
+      { id: 'lime', name: 'Electric Lime', color: '#87e85a', price: 25 },
+      { id: 'gold', name: 'Gold Rush', color: '#ffd43b', price: 50 }
+    ];
+    let ownedCars = JSON.parse(localStorage.getItem('neonHighwayCars') || '["blue"]');
+    let selectedCar = localStorage.getItem('neonHighwayCar') || 'blue';
+    if (!ownedCars.includes(selectedCar)) selectedCar = 'blue';
+    const keys = new Set();
+    bestEl.textContent = `Best: ${bestScore}`;
+    totalCoinsEl.textContent = `Total: ${totalCoins}`;
+
+    function resetGame() {
+      player = { lane: 1, x: lanes[1], y: 575, w: 50, h: 95, moveCooldown: 0, color: garageCars.find(car => car.id === selectedCar).color };
+      cars = []; coins = [];
+      score = 0; coinCount = 0; roadY = 0; spawnTimer = 550; coinTimer = 900;
+      scoreEl.textContent = 'Score: 0';
+      coinsEl.textContent = 'Coins: 0';
+    }
+
+    function startGame() {
+      resetGame(); running = true; lastTime = performance.now(); overlay.hidden = true;
+      requestAnimationFrame(loop);
+    }
+
+    function movePlayer(direction) {
+      if (!running || player.moveCooldown > 0) return;
+      const nextLane = Math.max(0, Math.min(3, player.lane + direction));
+      if (nextLane !== player.lane) { player.lane = nextLane; player.moveCooldown = 140; }
+    }
+
+    function saveGarage() {
+      localStorage.setItem('neonHighwayCoins', totalCoins);
+      localStorage.setItem('neonHighwayCars', JSON.stringify(ownedCars));
+      localStorage.setItem('neonHighwayCar', selectedCar);
+      totalCoinsEl.textContent = `Total: ${totalCoins}`;
+    }
+
+    function renderGarage() {
+      shopCoinsEl.textContent = `Total coins: ${totalCoins}`;
+      carOptions.innerHTML = garageCars.map(car => {
+        const owned = ownedCars.includes(car.id);
+        const label = car.id === selectedCar ? 'Selected' : owned ? 'Use car' : `Buy (${car.price})`;
+        const disabled = car.id === selectedCar || (!owned && totalCoins < car.price);
+        return `<div class="car-option"><span class="car-preview" style="background:${car.color}"></span><span><b>${car.name}</b><br><small>${owned ? 'Owned' : `${car.price} coins`}</small></span><button data-car="${car.id}" ${disabled ? 'disabled' : ''}>${label}</button></div>`;
+      }).join('');
+    }
+
+    function openGarage() { renderGarage(); shop.hidden = false; }
+    function chooseCar(id) {
+      const car = garageCars.find(item => item.id === id);
+      if (!ownedCars.includes(id)) { if (totalCoins < car.price) return; totalCoins -= car.price; ownedCars.push(id); }
+      selectedCar = id; saveGarage(); renderGarage();
+    }
+
+    function endGame() {
+      running = false;
+      if (score > bestScore) { bestScore = score; localStorage.setItem('neonHighwayBest', bestScore); }
+      bestEl.textContent = `Best: ${bestScore}`;
+      titleEl.textContent = 'CRASHED!';
+      messageEl.textContent = `Final score: ${score}${score === bestScore && score > 0 ? ' — new best!' : ''}`;
+      startButton.textContent = 'Drive again'; overlay.hidden = false;
+    }
+
+    function spawnCar() {
+      const occupied = new Set(cars.filter(car => car.y < 220).map(car => car.lane));
+      const choices = [0, 1, 2, 3].filter(lane => !occupied.has(lane));
+      if (!choices.length) return;
+      const lane = choices[Math.floor(Math.random() * choices.length)];
+      cars.push({ lane, x: lanes[lane], y: -110, w: 50, h: 95, speed: 250 + Math.min(score * 4, 150), color: ['#ff4e73', '#ffb347', '#ac75ff'][Math.floor(Math.random() * 3)] });
+    }
+
+    function spawnCoin() {
+      const lane = Math.floor(Math.random() * 4);
+      coins.push({ x: lanes[lane] + 8, y: -35, w: 34, h: 34, speed: 250 + Math.min(score * 4, 150), spin: 0 });
+    }
+
+    function overlaps(a, b) { return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y; }
+
+    function drawCar(car, isPlayer = false) {
+      ctx.save();
+      ctx.fillStyle = '#0007'; ctx.fillRect(car.x + 5, car.y + 7, car.w, car.h);
+      ctx.fillStyle = car.color;
+      ctx.fillRect(car.x, car.y, car.w, car.h);
+      ctx.fillStyle = isPlayer ? '#bff6ff' : '#dce7ff'; ctx.fillRect(car.x + 7, car.y + 13, 36, 25);
+      ctx.fillStyle = '#172033'; ctx.fillRect(car.x + 11, car.y + 17, 28, 17);
+      ctx.fillStyle = '#ffef78'; ctx.fillRect(car.x + 5, car.y + car.h - 10, 10, 5); ctx.fillRect(car.x + 35, car.y + car.h - 10, 10, 5);
+      ctx.restore();
+    }
+
+    function drawCoin(coin) {
+      const squash = 0.65 + Math.abs(Math.sin(coin.spin)) * 0.35;
+      ctx.save();
+      ctx.translate(coin.x + coin.w / 2, coin.y + coin.h / 2);
+      ctx.scale(squash, 1);
+      ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffd43b'; ctx.fill();
+      ctx.lineWidth = 3; ctx.strokeStyle = '#fff4a3'; ctx.stroke();
+      ctx.fillStyle = '#c88900'; ctx.font = 'bold 18px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('$', 0, 1);
+      ctx.restore();
+    }
+
+    function drawRoad(delta) {
+      ctx.fillStyle = '#1b742f'; ctx.fillRect(0, 0, 400, 700);
+      ctx.fillStyle = '#303744'; ctx.fillRect(12, 0, 376, 700);
+      ctx.strokeStyle = '#eef4ff'; ctx.lineWidth = 4;
+      [12, 388].forEach(x => { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 700); ctx.stroke(); });
+      roadY = (roadY + delta * (0.30 + score * 0.003)) % 80;
+      ctx.fillStyle = '#f8fbff';
+      for (let x = 100; x < 400; x += 100) for (let y = -80 + roadY; y < 700; y += 80) ctx.fillRect(x - 5, y, 10, 40);
+    }
+
+    function update(delta) {
+      player.moveCooldown -= delta;
+      const wantsLeft = keys.has('arrowleft') || keys.has('a');
+      const wantsRight = keys.has('arrowright') || keys.has('d');
+      if (player.moveCooldown <= 0 && (wantsLeft || wantsRight)) {
+        if (wantsLeft && player.lane > 0) player.lane--;
+        else if (wantsRight && player.lane < 3) player.lane++;
+        player.moveCooldown = 140;
+      }
+      player.x += (lanes[player.lane] - player.x) * Math.min(1, delta * 0.018);
+      spawnTimer -= delta;
+      if (spawnTimer <= 0) { spawnCar(); spawnTimer = Math.max(380, 900 - score * 9) + Math.random() * 300; }
+      coinTimer -= delta;
+      if (coinTimer <= 0) { spawnCoin(); coinTimer = 1200 + Math.random() * 1300; }
+      for (let i = cars.length - 1; i >= 0; i--) {
+        const car = cars[i]; car.y += car.speed * delta / 1000;
+        if (overlaps(player, car)) { endGame(); return; }
+        if (car.y > 730) { cars.splice(i, 1); score++; scoreEl.textContent = `Score: ${score}`; }
+      }
+      for (let i = coins.length - 1; i >= 0; i--) {
+        const coin = coins[i]; coin.y += coin.speed * delta / 1000; coin.spin += delta * 0.012;
+        if (overlaps(player, coin)) {
+          coins.splice(i, 1); coinCount++; totalCoins++;
+          coinsEl.textContent = `Coins: ${coinCount}`;
+          totalCoinsEl.textContent = `Total: ${totalCoins}`;
+          saveGarage();
+        }
+        else if (coin.y > 730) coins.splice(i, 1);
+      }
+    }
+
+    function loop(time) {
+      if (!running) return;
+      const delta = Math.min(40, time - lastTime); lastTime = time;
+      update(delta); drawRoad(delta); coins.forEach(drawCoin); cars.forEach(car => drawCar(car)); drawCar(player, true);
+      if (running) requestAnimationFrame(loop);
+    }
+
+    document.addEventListener('keydown', event => {
+      const k = event.key.toLowerCase();
+      if (['arrowleft', 'arrowright', 'a', 'd'].includes(k)) {
+        event.preventDefault();
+        keys.add(k);
+      }
+    });
+    document.addEventListener('keyup', event => {
+      keys.delete(event.key.toLowerCase());
+    });
+    startButton.addEventListener('click', startGame);
+    garageButton.addEventListener('click', openGarage);
+    closeShop.addEventListener('click', () => { shop.hidden = true; });
+    carOptions.addEventListener('click', event => { const id = event.target.dataset.car; if (id) chooseCar(id); });
+    leftButton.addEventListener('click', () => movePlayer(-1));
+    rightButton.addEventListener('click', () => movePlayer(1));
+  </script>
+</body>
+</html>

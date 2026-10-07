@@ -1,0 +1,107 @@
+:root {
+  --ink: #f3f1fd;
+  --muted: #9f9bbd;
+  --cyan: #00f2fe;
+  --pink: #ff0844;
+  --purple: #b92bcf;
+  --yellow: #f6d365;
+  --line: rgba(255,255,255,0.08);
+}
+* { box-sizing: border-box; margin: 0; }
+body {
+  min-height: 100vh;
+  display: grid; place-items: center;
+  background: radial-gradient(circle at top, #14112e, #080614 85%);
+  color: var(--ink);
+  font-family: Outfit, sans-serif;
+  padding: 16px;
+}
+body::before {
+  content: "";
+  position: fixed; inset: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px), linear-gradient(90deg,rgba(255,255,255,0.012) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(to bottom, black 60%, transparent);
+}
+.game-shell { width: min(860px,100%); display: flex; flex-direction: column; gap: 14px; }
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  padding: 12px 20px;
+  background: rgba(22,19,48,0.7);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+}
+.brand {
+  font-family: Orbitron, sans-serif; font-size: 1.1rem; font-weight: 900; letter-spacing: 2px;
+  color: var(--purple); text-shadow: 0 0 12px rgba(185,43,207,0.5);
+}
+.brand em { color: var(--cyan); font-style: normal; text-shadow: 0 0 12px rgba(0,242,254,0.5); }
+.brand-mark { margin-right: 6px; }
+.score-display { display: flex; align-items: center; gap: 14px; }
+.score-block {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-size: 0.65rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+}
+.score-block strong { font-family: Orbitron, sans-serif; font-size: 2.2rem; line-height: 1; }
+.player-score { color: var(--cyan); text-shadow: 0 0 10px rgba(0,242,254,0.5); }
+.ai-score { color: var(--pink); text-shadow: 0 0 10px rgba(255,8,68,0.5); }
+.score-sep { font-family: Orbitron, sans-serif; font-size: 2rem; color: var(--muted); }
+.info-block { font-size: 0.8rem; color: var(--muted); font-weight: 700; }
+.pause-button {
+  width: 42px; height: 42px; border-radius: 10px;
+  border: 1px solid var(--line); background: rgba(255,255,255,0.03);
+  color: var(--ink); font-size: 1.1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s ease;
+}
+.pause-button:hover { background: rgba(0,242,254,0.1); border-color: var(--cyan); color: var(--cyan); }
+.pause-button:disabled { opacity: 0.3; cursor: not-allowed; }
+.pause-button:disabled:hover { background: rgba(255,255,255,0.03); border-color: var(--line); color: var(--ink); }
+.board-wrap {
+  position: relative; border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--line); background: #030212;
+  box-shadow: 0 20px 55px rgba(0,0,0,0.7);
+  aspect-ratio: 800/500;
+}
+canvas { display: block; width: 100%; height: 100%; }
+.overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 14px;
+  background: rgba(3,2,18,0.9); backdrop-filter: blur(6px); padding: 24px;
+}
+.overlay.hidden { display: none; }
+.eyebrow { color: var(--purple); font-size: 0.7rem; letter-spacing: 3px; font-weight: 700; text-shadow: 0 0 8px rgba(185,43,207,0.4); }
+.overlay h1 { font-family: Orbitron, sans-serif; font-size: clamp(2.2rem,7vw,4.2rem); line-height: 0.9; }
+.overlay h1 span { color: var(--cyan); text-shadow: 0 0 20px rgba(0,242,254,0.6); }
+.overlay-copy { color: var(--muted); line-height: 1.6; font-size: 0.9rem; }
+.primary-button {
+  border: 0; border-radius: 10px; padding: 13px 28px;
+  color: #000; background: linear-gradient(100deg, var(--purple), var(--cyan));
+  box-shadow: 0 4px 18px rgba(185,43,207,0.35);
+  font: 800 0.95rem Outfit; cursor: pointer; transition: all 0.2s ease;
+}
+.primary-button:hover { filter: brightness(1.2); transform: translateY(-2px); }
+.primary-button span { margin-left: 8px; }
+.hint { color: var(--muted); font-size: 0.72rem; }
+kbd { background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 4px; padding: 2px 6px; font-size: 0.72rem; }
+.controls-bar { display: flex; justify-content: center; }
+.mobile-controls { display: flex; gap: 20px; }
+.ctrl-btn {
+  width: 120px; height: 50px; border: 1px solid var(--line);
+  border-radius: 12px; background: rgba(255,255,255,0.03);
+  color: var(--cyan); font: 700 0.9rem Outfit; cursor: pointer;
+  transition: all 0.15s ease; touch-action: manipulation;
+}
+.ctrl-btn:active { background: rgba(0,242,254,0.1); border-color: var(--cyan); }
+
+/* Hide scrollbar visually (scrolling still works) */
+html {
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* IE/Edge legacy */
+}
+
+html::-webkit-scrollbar {
+  display: none;               /* Chrome/Safari/Edge */
+}

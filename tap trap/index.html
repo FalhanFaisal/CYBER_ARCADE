@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#15132b" />
+  <title>Tap Trap! — Whack-a-Mole</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="game-shell">
+    <header>
+      <div class="brand"><span class="brand-badge">⚡</span><h1>TAP <em>TRAP!</em></h1></div>
+    </header>
+
+    <section class="game-panel" aria-label="Whack a mole game">
+      <div class="top-row">
+        <div class="stat-card score-card"><span>Score</span><strong id="score">0</strong><small id="combo">COMBO ×1</small></div>
+        <div class="timer-wrap"><div class="timer-ring"><strong id="timer">30</strong><span>SEC</span></div></div>
+        <div class="stat-card high-card"><span>Best</span><strong id="highScore">0</strong><small>HIGH SCORE</small></div>
+      </div>
+
+      <div class="settings">
+        <div class="difficulty" role="group" aria-label="Difficulty">
+          <button class="level active" data-level="easy">Easy</button>
+          <button class="level" data-level="medium">Medium</button>
+          <button class="level" data-level="hard">Hard</button>
+        </div>
+        <div class="lives" aria-label="Lives"><span>Lives</span><div id="hearts">❤️❤️❤️</div></div>
+      </div>
+
+      <div class="yard" id="yard" aria-label="Mole holes">
+        <div class="grass grass-a">✦</div><div class="grass grass-b">✦</div>
+        <button class="hole" aria-label="Hole 1"></button><button class="hole" aria-label="Hole 2"></button><button class="hole" aria-label="Hole 3"></button>
+        <button class="hole" aria-label="Hole 4"></button><button class="hole" aria-label="Hole 5"></button><button class="hole" aria-label="Hole 6"></button>
+        <button class="hole" aria-label="Hole 7"></button><button class="hole" aria-label="Hole 8"></button><button class="hole" aria-label="Hole 9"></button>
+      </div>
+
+      <button class="start-button" id="startButton"><span>▶</span> Start Game</button>
+      <p class="hint">Tap the moles — avoid the bombs! 💣</p>
+    </section>
+  </main>
+
+  <div class="modal" id="gameOver" aria-hidden="true">
+    <div class="modal-card"><div class="trophy">🏆</div><p>TIME'S UP!</p><h2 id="finalScore">0</h2><span>points scored</span><div id="newBest" class="new-best">NEW HIGH SCORE!</div><button id="playAgain">Play Again <span>↻</span></button></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brick Smash</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Brick Smash home"><span class="brand-mark">✦</span> BRICK <em>SMASH</em></a>
+      <button id="pauseButton" class="icon-button" aria-label="Pause game" disabled>Ⅱ</button>
+    </header>
+
+    <section class="stats" aria-label="Game statistics">
+      <div><span>SCORE</span><strong id="score">0000</strong></div>
+      <div><span>LEVEL</span><strong id="level">01</strong></div>
+      <div><span>LIVES</span><strong id="lives" class="hearts">♥ ♥ ♥</strong></div>
+    </section>
+
+    <section class="board-wrap" aria-label="Brick Breaker game board">
+      <canvas id="gameCanvas" width="900" height="590"></canvas>
+      <div id="overlay" class="overlay">
+        <p class="eyebrow">READY PLAYER ONE</p>
+        <h1>BREAK THE<br><span>RULES.</span></h1>
+        <p class="overlay-copy">Clear every brick. Keep the ball in play.<br>How high can you score?</p>
+        <button id="startButton" class="primary-button">Start game <span>→</span></button>
+        <p class="hint">Move with <kbd>←</kbd> <kbd>→</kbd> or your mouse</p>
+      </div>
+    </section>
+
+    <footer class="controls">
+      <p><span class="key">←</span><span class="key">→</span> Move paddle</p>
+      <p><span class="key wide">Space</span> Launch / pause</p>
+    </footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
