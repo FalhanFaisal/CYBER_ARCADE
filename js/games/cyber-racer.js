@@ -64,14 +64,38 @@ window.CyberRacerGame = {
         const modalRestart = this.container.querySelector('#cr-modal-restart');
 
         this.onKeyDown = (e) => {
-            if (e.repeat) return;
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') this.keys.left = true;
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') this.keys.right = true;
-            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') this.keys.up = true;
-            if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') this.keys.down = true;
-            if (e.key === ' ') {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
                 e.preventDefault();
-                this.togglePause();
+                this.keys.left = true;
+            }
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                e.preventDefault();
+                this.keys.right = true;
+            }
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                e.preventDefault();
+                this.keys.up = true;
+            }
+            if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+                e.preventDefault();
+                this.keys.down = true;
+            }
+            if (e.key === ' ' || e.key === 'p' || e.key === 'P') {
+                if (e.repeat) return;
+                e.preventDefault();
+                if (this.gameOver) {
+                    this.hideModal();
+                    this.startNewGame();
+                } else {
+                    this.togglePause();
+                }
+            }
+            if (e.key === 'Enter') {
+                if (this.gameOver) {
+                    e.preventDefault();
+                    this.hideModal();
+                    this.startNewGame();
+                }
             }
         };
 
@@ -107,6 +131,9 @@ window.CyberRacerGame = {
         this.speed = 5;
         this.gameOver = false;
         this.paused = false;
+
+        const pauseBtn = this.container.querySelector('#cr-pause');
+        if (pauseBtn) pauseBtn.textContent = 'PAUSE [SPACE]';
 
         this.player.w = 40;
         this.player.h = 70;
@@ -166,6 +193,7 @@ window.CyberRacerGame = {
     update() {
         const effectiveSpeed = this.keys.up ? this.speed * 1.6 : (this.keys.down ? this.speed * 0.6 : this.speed);
         this.roadOffset = (this.roadOffset + effectiveSpeed) % 40;
+        this.updateUI(effectiveSpeed);
 
         // Move player
         if (this.keys.left) this.player.x = Math.max(30, this.player.x - this.player.speed);
@@ -257,11 +285,11 @@ window.CyberRacerGame = {
         this.ctx.shadowBlur = 0;
     },
 
-    updateUI() {
+    updateUI(curSpeed = this.speed) {
         const scoreEl = this.container.querySelector('#cr-score');
         const speedEl = this.container.querySelector('#cr-speed');
         if (scoreEl) scoreEl.textContent = this.score;
-        if (speedEl) speedEl.textContent = `${Math.round(80 + this.speed * 12)} KM/H`;
+        if (speedEl) speedEl.textContent = `${Math.round(80 + curSpeed * 12)} KM/H`;
     },
 
     handleGameOver() {
@@ -272,7 +300,11 @@ window.CyberRacerGame = {
         const modal = this.container.querySelector('#cr-modal');
         const finalScore = this.container.querySelector('#cr-final-score');
         if (finalScore) finalScore.textContent = this.score;
-        if (modal) modal.classList.remove('hidden');
+        if (modal) {
+            modal.classList.remove('hidden');
+            const restartBtn = modal.querySelector('#cr-modal-restart');
+            if (restartBtn) restartBtn.focus();
+        }
     },
 
     hideModal() {
@@ -286,5 +318,6 @@ window.CyberRacerGame = {
         window.removeEventListener('keydown', this.onKeyDown);
         window.removeEventListener('keyup', this.onKeyUp);
         window.removeEventListener('blur', this.onBlur);
+        this.hideModal();
     }
 };

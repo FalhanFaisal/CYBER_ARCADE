@@ -729,3 +729,168 @@ canvas {
 .tt-mole.whacked {
     transform: scale(0.6);
 }
+
+.tt-key-badge {
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    font-size: 0.72rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--accent-cyan);
+    background: rgba(7, 9, 19, 0.85);
+    border: 1px solid rgba(0, 243, 255, 0.4);
+    border-radius: 4px;
+    padding: 1px 6px;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 0 8px rgba(0, 243, 255, 0.2);
+}
+
+.game-card:focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 3px;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 243, 255, 0.25);
+}
+
+canvas {
+    cursor: default;
+}
+
+.brick-smash-wrapper canvas,
+.cyber-pong-wrapper canvas {
+    cursor: crosshair;
+}
+
+.cyber-invaders-wrapper canvas,
+.retro-aero-wrapper canvas {
+    cursor: pointer;
+}
+
+/* PC / Desktop Enforcement Gatekeeper Overlay */
+.desktop-gatekeeper-overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(14, 20, 48, 0.98) 0%, rgba(5, 7, 17, 0.99) 100%);
+    z-index: 100000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    backdrop-filter: blur(16px);
+}
+
+.desktop-gatekeeper-card {
+    background: rgba(18, 24, 52, 0.96);
+    border: 2px solid var(--accent-pink);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(255, 0, 127, 0.35), inset 0 0 30px rgba(255, 0, 127, 0.1);
+    animation: gatekeeperPulse 3s infinite alternate ease-in-out;
+}
+
+@keyframes gatekeeperPulse {
+    0% { border-color: var(--accent-pink); box-shadow: 0 0 35px rgba(255, 0, 127, 0.35); }
+    100% { border-color: var(--accent-cyan); box-shadow: 0 0 45px rgba(0, 243, 255, 0.4); }
+}
+
+.gatekeeper-icon-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.gatekeeper-icon {
+    font-size: 3.5rem;
+    filter: drop-shadow(0 0 15px var(--accent-cyan));
+    animation: monitorBounce 2s infinite ease-in-out;
+}
+
+@keyframes monitorBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.gatekeeper-badge {
+    font-size: 0.72rem;
+    font-family: var(--font-heading);
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+    padding: 0.25rem 0.8rem;
+    border-radius: 999px;
+    letter-spacing: 1px;
+}
+
+.gatekeeper-title {
+    font-family: var(--font-heading);
+    font-size: 1.7rem;
+    color: #fff;
+    margin-bottom: 0.3rem;
+    text-shadow: 0 0 15px var(--accent-cyan);
+}
+
+.gatekeeper-alert {
+    font-family: var(--font-heading);
+    font-size: 0.82rem;
+    color: var(--accent-pink);
+    letter-spacing: 1.5px;
+    margin-bottom: 1.2rem;
+}
+
+.gatekeeper-desc {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.gatekeeper-specs {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    background: rgba(10, 13, 28, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.82rem;
+    color: var(--text-main);
+}
+
+.gatekeeper-specs .spec-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.gatekeeper-resolution {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--accent-yellow);
+    margin-bottom: 1.5rem;
+}
+
+.gatekeeper-bypass-btn {
+    background: transparent;
+    border: 1px dashed rgba(255, 255, 255, 0.25);
+    color: var(--text-muted);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.gatekeeper-bypass-btn:hover {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+    background: rgba(0, 243, 255, 0.08);
+}

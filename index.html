@@ -54,11 +54,13 @@
         <section class="hero-section">
             <h1 class="hero-title">ULTIMATE PC GAMING SUITE</h1>
             <p class="hero-subtitle">
-                <span>Press <kbd>ESC</kbd> anytime to return to Lobby</span>
+                <span>Press <kbd>ESC</kbd> Return to Lobby</span>
                 <span>•</span>
-                <span>Press <kbd>M</kbd> Mute Audio</span>
+                <span><kbd>P</kbd> Pause/Resume</span>
                 <span>•</span>
-                <span>Press <kbd>F</kbd> Fullscreen</span>
+                <span><kbd>M</kbd> Mute Audio</span>
+                <span>•</span>
+                <span><kbd>F</kbd> Fullscreen</span>
             </p>
         </section>
 
@@ -75,6 +77,29 @@
             </div>
         </div>
         <div class="game-stage" id="game-stage"></div>
+    </div>
+
+    <!-- Desktop / PC Only Enforcement Overlay -->
+    <div class="desktop-gatekeeper-overlay hidden" id="desktop-only-gatekeeper">
+        <div class="desktop-gatekeeper-card">
+            <div class="gatekeeper-icon-wrap">
+                <span class="gatekeeper-icon">🖥️</span>
+                <span class="gatekeeper-badge">DESKTOP EXCLUSIVE</span>
+            </div>
+            <h2 class="gatekeeper-title">PC & DESKTOP REQUIRED</h2>
+            <p class="gatekeeper-alert">TERMINAL ACCESS RESTRICTED</p>
+            <p class="gatekeeper-desc">
+                This arcade suite is engineered specifically for <strong>PC, Desktop, and Laptop</strong> computers. 
+                Full keyboard controls (<kbd>WASD</kbd>, <kbd>Arrows</kbd>, <kbd>Space</kbd>, <kbd>P</kbd>, <kbd>ESC</kbd>) and mouse precision are required to operate these game engines.
+            </p>
+            <div class="gatekeeper-specs">
+                <div class="spec-item"><span>⌨️</span> <strong>Physical Keyboard</strong></div>
+                <div class="spec-item"><span>🖱️</span> <strong>Mouse / Trackpad</strong></div>
+                <div class="spec-item"><span>📏</span> <strong>Min Screen: 960px Width</strong></div>
+            </div>
+            <div class="gatekeeper-resolution" id="gatekeeper-res">DETECTING RESOLUTION...</div>
+            <button class="gatekeeper-bypass-btn" id="btn-bypass-gatekeeper">I AM ON PC / LAPTOP (FORCE ENTER)</button>
+        </div>
     </div>
 
     <!-- Scripts -->

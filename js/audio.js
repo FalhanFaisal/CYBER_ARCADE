@@ -8,15 +8,7 @@ class SoundEngine {
 
     init() {
         const initAudio = () => {
-            if (!this.ctx) {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (AudioContext) {
-                    this.ctx = new AudioContext();
-                }
-            }
-            if (this.ctx && this.ctx.state === 'suspended') {
-                this.ctx.resume();
-            }
+            this.ensureContext();
             window.removeEventListener('keydown', initAudio);
             window.removeEventListener('click', initAudio);
         };
@@ -24,13 +16,28 @@ class SoundEngine {
         window.addEventListener('click', initAudio);
     }
 
+    ensureContext() {
+        if (!this.ctx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) {
+                this.ctx = new AudioContext();
+            }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(() => {});
+        }
+    }
+
     toggleMute() {
+        this.ensureContext();
         this.muted = !this.muted;
         return this.muted;
     }
 
     playTone(freq, type = 'sine', duration = 0.1, startVol = 0.3, endVol = 0) {
-        if (this.muted || !this.ctx) return;
+        if (this.muted) return;
+        this.ensureContext();
+        if (!this.ctx) return;
         try {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
@@ -39,14 +46,16 @@ class SoundEngine {
             gain.gain.setValueAtTime(startVol, this.ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, endVol), this.ctx.currentTime + duration);
             osc.connect(gain);
-            gain.connect(this.destination || this.ctx.destination);
+            gain.connect(this.ctx.destination);
             osc.start();
             osc.stop(this.ctx.currentTime + duration);
         } catch (e) { }
     }
 
     playSweep(startFreq, endFreq, type = 'sawtooth', duration = 0.15, vol = 0.3) {
-        if (this.muted || !this.ctx) return;
+        if (this.muted) return;
+        this.ensureContext();
+        if (!this.ctx) return;
         try {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();

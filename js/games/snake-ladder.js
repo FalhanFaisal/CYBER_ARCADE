@@ -123,7 +123,8 @@ window.SnakeLadderGame = {
         boardEl.innerHTML = '';
 
         for (let row = 9; row >= 0; row--) {
-            const isReverse = (9 - row) % 2 === 1;
+            // Standard boustrophedon: row 0 is left-to-right (1-10), row 1 is right-to-left (20-11), etc.
+            const isReverse = row % 2 === 1;
             for (let col = 0; col < 10; col++) {
                 const cellNum = isReverse ? row * 10 + (10 - col) : row * 10 + col + 1;
                 const cell = document.createElement('div');
@@ -165,6 +166,13 @@ window.SnakeLadderGame = {
     },
 
     handleRollClick() {
+        const modal = this.container.querySelector('#sl-modal');
+        if (modal && !modal.classList.contains('hidden')) {
+            this.hideModal();
+            this.startNewGame();
+            return;
+        }
+
         if (this.isRolling) return;
         const currentP = this.players[this.turn];
         if (currentP.isAI) return; // AI takes turn automatically
@@ -175,6 +183,7 @@ window.SnakeLadderGame = {
     async executeTurn() {
         const sessionToken = this.currentSession;
         this.isRolling = true;
+        this.totalTurns = (this.totalTurns || 0) + 1;
 
         const currentP = this.players[this.turn];
         const diceEl = this.container.querySelector('#sl-dice');
@@ -200,6 +209,12 @@ window.SnakeLadderGame = {
             this.renderTokens();
             if (window.arcadeAudio) window.arcadeAudio.bounce();
             await new Promise(r => setTimeout(r, 350));
+        } else {
+            // Overshot 100 - must roll exact number
+            const statusEl = this.container.querySelector('#sl-turn-status');
+            if (statusEl) statusEl.textContent = `${currentP.name.toUpperCase()}: NEED EXACT ${100 - currentP.pos} TO WIN!`;
+            if (window.arcadeAudio) window.arcadeAudio.bounce();
+            await new Promise(r => setTimeout(r, 400));
         }
 
         // Check snake or ladder
@@ -219,6 +234,7 @@ window.SnakeLadderGame = {
 
         // Win check
         if (currentP.pos === 100) {
+            this.isRolling = false;
             this.handleEndGame(currentP);
             return;
         }
@@ -264,13 +280,15 @@ window.SnakeLadderGame = {
     },
 
     handleEndGame(winner) {
+        this.isRolling = false;
         if (window.arcadeAudio) {
             if (!winner.isAI) window.arcadeAudio.win();
             else window.arcadeAudio.lose();
         }
 
+        const score = Math.max(100, 1000 - (this.totalTurns || 0) * 20);
         if (!winner.isAI && window.ArcadeHub) {
-            window.ArcadeHub.updateHighScore('snake-ladder', 500);
+            window.ArcadeHub.updateHighScore('snake-ladder', score);
         }
 
         const modal = this.container.querySelector('#sl-modal');
@@ -278,8 +296,12 @@ window.SnakeLadderGame = {
         const descEl = this.container.querySelector('#sl-modal-desc');
 
         if (titleEl) titleEl.textContent = `${winner.name.toUpperCase()} VICTORY!`;
-        if (descEl) descEl.textContent = `${winner.name} successfully reached Cell 100!`;
-        if (modal) modal.classList.remove('hidden');
+        if (descEl) descEl.textContent = `${winner.name} successfully reached Cell 100 in ${this.totalTurns || 0} turns! (Score: ${score})`;
+        if (modal) {
+            modal.classList.remove('hidden');
+            const restartBtn = modal.querySelector('#sl-modal-restart');
+            if (restartBtn) restartBtn.focus();
+        }
     },
 
     hideModal() {
@@ -289,6 +311,8 @@ window.SnakeLadderGame = {
 
     destroy() {
         this.currentSession++;
+        this.isRolling = false;
         window.removeEventListener('keydown', this.onKeyDown);
+        this.hideModal();
     }
 };

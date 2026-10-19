@@ -15,14 +15,14 @@ window.CyberInvadersGame = {
     alienSpeed: 1,
     baseAlienSpeed: 1,
     lastAlienShoot: 0,
-    keys: { left: false, right: false, space: false },
+    wave: 1,
 
     init(container) {
         this.container = container;
         this.renderLayout();
         this.setupCanvas();
         this.bindEvents();
-        this.startNewGame();
+        this.startNewGame(false);
     },
 
     renderLayout() {
@@ -30,8 +30,9 @@ window.CyberInvadersGame = {
             <div class="game-wrapper cyber-invaders-wrapper">
                 <div class="game-header-bar">
                     <div class="stat-box">SCORE: <span id="ci-score" class="stat-value">0</span></div>
+                    <div class="stat-box">WAVE: <span id="ci-wave" class="stat-value">1</span></div>
                     <div class="stat-box">LIVES: <span id="ci-lives" class="stat-value">❤️❤️❤️</span></div>
-                    <button class="action-btn" id="ci-pause">PAUSE [SPACE]</button>
+                    <button class="action-btn" id="ci-pause">PAUSE [P]</button>
                     <button class="action-btn" id="ci-restart">RESET</button>
                 </div>
 
@@ -41,7 +42,8 @@ window.CyberInvadersGame = {
 
                 <div class="pc-controls-hint">
                     <span><kbd>←</kbd> / <kbd>→</kbd> or <kbd>A</kbd> / <kbd>D</kbd> Move Ship</span>
-                    <span><kbd>SPACE</kbd> / <kbd>↑</kbd> Shoot Plasma Cannon</span>
+                    <span><kbd>SPACE</kbd> / <kbd>↑</kbd> or <kbd>CLICK</kbd> Shoot Plasma Cannon</span>
+                    <span><kbd>P</kbd> Pause/Resume</span>
                 </div>
 
                 <div class="game-overlay-modal hidden" id="ci-modal">
@@ -66,14 +68,40 @@ window.CyberInvadersGame = {
         const modalRestart = this.container.querySelector('#ci-modal-restart');
 
         this.onKeyDown = (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') this.keys.left = true;
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') this.keys.right = true;
-            if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                e.preventDefault();
+                this.keys.left = true;
+            }
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                e.preventDefault();
+                this.keys.right = true;
+            }
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                e.preventDefault();
+                if (this.state === 'playing') {
+                    this.firePlayerBullet();
+                }
+            }
+            if (e.key === ' ') {
                 e.preventDefault();
                 if (this.state === 'playing') {
                     this.firePlayerBullet();
                 } else if (this.state === 'paused') {
                     this.togglePause();
+                } else if (this.state === 'gameover' || this.state === 'victory') {
+                    this.hideModal();
+                    this.startNewGame(this.state === 'victory');
+                }
+            }
+            if (e.key === 'p' || e.key === 'P') {
+                e.preventDefault();
+                this.togglePause();
+            }
+            if (e.key === 'Enter') {
+                if (this.state === 'gameover' || this.state === 'victory') {
+                    e.preventDefault();
+                    this.hideModal();
+                    this.startNewGame(this.state === 'victory');
                 }
             }
         };
@@ -83,21 +111,44 @@ window.CyberInvadersGame = {
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') this.keys.right = false;
         };
 
+        this.onBlur = () => {
+            this.keys.left = false;
+            this.keys.right = false;
+        };
+
+        this.onCanvasClick = () => {
+            if (this.state === 'playing') {
+                this.firePlayerBullet();
+            }
+        };
+
         window.addEventListener('keydown', this.onKeyDown);
         window.addEventListener('keyup', this.onKeyUp);
+        window.addEventListener('blur', this.onBlur);
+        this.canvas.addEventListener('click', this.onCanvasClick);
 
         pauseBtn.addEventListener('click', () => this.togglePause());
-        restartBtn.addEventListener('click', () => this.startNewGame());
+        restartBtn.addEventListener('click', () => this.startNewGame(false));
         modalRestart.addEventListener('click', () => {
+            const nextWave = this.state === 'victory';
             this.hideModal();
-            this.startNewGame();
+            this.startNewGame(nextWave);
         });
     },
 
-    startNewGame() {
-        this.score = 0;
-        this.lives = 3;
+    startNewGame(nextWave = false) {
+        if (!nextWave) {
+            this.score = 0;
+            this.lives = 3;
+            this.wave = 1;
+        } else {
+            this.wave++;
+        }
+
         this.state = 'playing';
+
+        const pauseBtn = this.container.querySelector('#ci-pause');
+        if (pauseBtn) pauseBtn.textContent = 'PAUSE [P]';
 
         this.player.x = (this.canvas.width - this.player.w) / 2;
         this.player.y = this.canvas.height - 40;
@@ -164,7 +215,7 @@ window.CyberInvadersGame = {
             this.startLoop();
         }
         const pauseBtn = this.container.querySelector('#ci-pause');
-        if (pauseBtn) pauseBtn.textContent = this.state === 'paused' ? 'RESUME [SPACE]' : 'PAUSE [SPACE]';
+        if (pauseBtn) pauseBtn.textContent = this.state === 'paused' ? 'RESUME [P]' : 'PAUSE [P]';
     },
 
     startLoop() {
@@ -336,8 +387,10 @@ window.CyberInvadersGame = {
 
     updateUI() {
         const scoreEl = this.container.querySelector('#ci-score');
+        const waveEl = this.container.querySelector('#ci-wave');
         const livesEl = this.container.querySelector('#ci-lives');
         if (scoreEl) scoreEl.textContent = this.score;
+        if (waveEl) waveEl.textContent = this.wave;
         // Bug fix: clamp lives to >= 0 to avoid RangeError
         if (livesEl) livesEl.textContent = '❤️'.repeat(Math.max(0, this.lives));
     },
@@ -351,15 +404,22 @@ window.CyberInvadersGame = {
             if (window.arcadeAudio) window.arcadeAudio.lose();
         }
 
+        this.updateUI();
+
         if (window.ArcadeHub) window.ArcadeHub.updateHighScore('cyber-invaders', this.score);
 
         const modal = this.container.querySelector('#ci-modal');
         const titleEl = this.container.querySelector('#ci-modal-title');
         const finalScore = this.container.querySelector('#ci-final-score');
+        const restartBtn = this.container.querySelector('#ci-modal-restart');
 
-        if (titleEl) titleEl.textContent = victory ? 'SYSTEM PURIFIED! VICTORY!' : 'FLEET OVERRUN!';
+        if (titleEl) titleEl.textContent = victory ? `WAVE ${this.wave} PURIFIED!` : 'FLEET OVERRUN!';
         if (finalScore) finalScore.textContent = this.score;
-        if (modal) modal.classList.remove('hidden');
+        if (restartBtn) restartBtn.textContent = victory ? 'NEXT WAVE → [SPACE]' : 'PLAY AGAIN [SPACE]';
+        if (modal) {
+            modal.classList.remove('hidden');
+            if (restartBtn) restartBtn.focus();
+        }
     },
 
     hideModal() {
@@ -372,5 +432,8 @@ window.CyberInvadersGame = {
         if (this.animId) cancelAnimationFrame(this.animId);
         window.removeEventListener('keydown', this.onKeyDown);
         window.removeEventListener('keyup', this.onKeyUp);
+        if (this.onBlur) window.removeEventListener('blur', this.onBlur);
+        if (this.canvas) this.canvas.removeEventListener('click', this.onCanvasClick);
+        this.hideModal();
     }
 };

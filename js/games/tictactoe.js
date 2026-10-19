@@ -78,15 +78,43 @@ window.TicTacToeGame = {
 
         boardEl.addEventListener('keydown', (e) => {
             const cell = e.target.closest('.ttt-cell');
-            if (cell && (e.key === 'Enter' || e.key === ' ')) {
-                e.preventDefault();
+            if (cell) {
                 const index = parseInt(cell.dataset.index);
-                this.handleCellClick(index);
+                const cells = Array.from(boardEl.querySelectorAll('.ttt-cell'));
+
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    cells[(index + 1) % 9].focus();
+                    return;
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    cells[(index - 1 + 9) % 9].focus();
+                    return;
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    cells[(index + 3) % 9].focus();
+                    return;
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    cells[(index - 3 + 9) % 9].focus();
+                    return;
+                } else if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.handleCellClick(index);
+                    return;
+                }
+            }
+
+            // Direct keyboard numpad/digits 1-9 support for PC desktop
+            if (e.key >= '1' && e.key <= '9') {
+                const cellIndex = parseInt(e.key) - 1;
+                this.handleCellClick(cellIndex);
             }
         });
 
         restartBtn.addEventListener('click', () => {
             if (window.arcadeAudio) window.arcadeAudio.click();
+            this.clearAITimer();
             this.resetGame();
         });
 
@@ -100,6 +128,7 @@ window.TicTacToeGame = {
         modeBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 if (window.arcadeAudio) window.arcadeAudio.click();
+                this.clearAITimer();
                 modeBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.gameMode = btn.dataset.mode;
@@ -113,12 +142,20 @@ window.TicTacToeGame = {
         diffBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 if (window.arcadeAudio) window.arcadeAudio.click();
+                this.clearAITimer();
                 diffBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.aiDifficulty = btn.dataset.diff;
                 this.resetGame();
             });
         });
+    },
+
+    clearAITimer() {
+        if (this.aiTimer) {
+            clearTimeout(this.aiTimer);
+            this.aiTimer = null;
+        }
     },
 
     handleCellClick(index) {
@@ -128,7 +165,9 @@ window.TicTacToeGame = {
 
         if (this.gameActive && this.gameMode === "ai" && this.currentPlayer === "O") {
             this.gameActive = false;
-            setTimeout(() => {
+            this.clearAITimer();
+            this.aiTimer = setTimeout(() => {
+                this.aiTimer = null;
                 this.gameActive = true;
                 this.makeAIMove();
             }, 400);
@@ -270,6 +309,7 @@ window.TicTacToeGame = {
     },
 
     resetGame() {
+        this.clearAITimer();
         this.board = Array(9).fill("");
         this.currentPlayer = "X";
         this.gameActive = true;
@@ -283,7 +323,11 @@ window.TicTacToeGame = {
         const descEl = this.container.querySelector('#ttt-modal-desc');
         if (titleEl) titleEl.textContent = title;
         if (descEl) descEl.textContent = desc;
-        if (modal) modal.classList.remove('hidden');
+        if (modal) {
+            modal.classList.remove('hidden');
+            const continueBtn = modal.querySelector('#ttt-modal-continue');
+            if (continueBtn) continueBtn.focus();
+        }
     },
 
     hideModal() {
@@ -291,5 +335,8 @@ window.TicTacToeGame = {
         if (modal) modal.classList.add('hidden');
     },
 
-    destroy() { }
+    destroy() {
+        this.clearAITimer();
+        this.hideModal();
+    }
 };

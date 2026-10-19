@@ -52,10 +52,11 @@ window.NeonMemoryGame = {
                         <h2 class="neon-title">MEMORY SYNCHRONIZED!</h2>
                         <p class="modal-sub">You matched all cards successfully.</p>
                         <div class="modal-stats">
+                            <p>Score: <strong id="nm-final-score" style="color:var(--accent-yellow)">0</strong></p>
                             <p>Time: <strong id="nm-final-time">00:00</strong></p>
                             <p>Moves: <strong id="nm-final-moves">0</strong></p>
                         </div>
-                        <button class="primary-btn" id="nm-modal-restart">PLAY AGAIN</button>
+                        <button class="primary-btn" id="nm-modal-restart">PLAY AGAIN [SPACE/ENTER]</button>
                     </div>
                 </div>
             </div>
@@ -142,9 +143,31 @@ window.NeonMemoryGame = {
 
             card.addEventListener('click', () => this.handleCardClick(card));
             card.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+                const cols = this.diffConfigs[this.currentDiff].cols;
+                const totalCards = this.totalPairs * 2;
+                const allCards = Array.from(board.querySelectorAll('.nm-card'));
+                let nextIndex = index;
+
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    nextIndex = (index + 1) % totalCards;
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    nextIndex = (index - 1 + totalCards) % totalCards;
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    nextIndex = (index + cols) % totalCards;
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    nextIndex = (index - cols + totalCards) % totalCards;
+                } else if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     this.handleCardClick(card);
+                    return;
+                }
+
+                if (allCards[nextIndex]) {
+                    allCards[nextIndex].focus();
                 }
             });
 
@@ -235,15 +258,19 @@ window.NeonMemoryGame = {
         if (window.ArcadeHub) window.ArcadeHub.updateHighScore('neon-memory', score);
 
         const modal = this.container.querySelector('#nm-win-modal');
+        const finalScore = this.container.querySelector('#nm-final-score');
         const finalTime = this.container.querySelector('#nm-final-time');
         const finalMoves = this.container.querySelector('#nm-final-moves');
 
+        if (finalScore) finalScore.textContent = score;
         if (finalTime) finalTime.textContent = this.formatTime(this.seconds);
         if (finalMoves) finalMoves.textContent = this.moves;
         
         if (modal) {
             modal.classList.remove('hidden');
             modal.setAttribute('aria-hidden', 'false');
+            const restartBtn = modal.querySelector('#nm-modal-restart');
+            if (restartBtn) restartBtn.focus();
         }
     },
 
@@ -258,5 +285,6 @@ window.NeonMemoryGame = {
     destroy() {
         this.stopTimer();
         if (this.mismatchTimer) clearTimeout(this.mismatchTimer);
+        this.hideWinModal();
     }
 };

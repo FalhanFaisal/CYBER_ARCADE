@@ -65,12 +65,30 @@ window.BrickSmashGame = {
         const modalRestart = this.container.querySelector('#bs-modal-restart');
 
         this.onKeyDown = (e) => {
-            if (e.repeat) return; // Prevent spacebar repeat loop bug
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') this.keys.left = true;
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') this.keys.right = true;
-            if (e.key === ' ') {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
                 e.preventDefault();
-                this.togglePause();
+                this.keys.left = true;
+            }
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                e.preventDefault();
+                this.keys.right = true;
+            }
+            if (e.key === ' ' || e.key === 'p' || e.key === 'P') {
+                if (e.repeat) return;
+                e.preventDefault();
+                if (this.gameOver) {
+                    this.hideModal();
+                    this.startNewGame();
+                } else {
+                    this.togglePause();
+                }
+            }
+            if (e.key === 'Enter') {
+                if (this.gameOver) {
+                    e.preventDefault();
+                    this.hideModal();
+                    this.startNewGame();
+                }
             }
         };
 
@@ -81,12 +99,19 @@ window.BrickSmashGame = {
 
         this.onMouseMove = (e) => {
             const rect = this.canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
+            if (!rect.width) return;
+            const mouseX = (e.clientX - rect.left) * (this.canvas.width / rect.width);
             this.paddle.x = Math.max(0, Math.min(this.canvas.width - this.paddle.w, mouseX - this.paddle.w / 2));
+        };
+
+        this.onBlur = () => {
+            this.keys.left = false;
+            this.keys.right = false;
         };
 
         window.addEventListener('keydown', this.onKeyDown);
         window.addEventListener('keyup', this.onKeyUp);
+        window.addEventListener('blur', this.onBlur);
         this.canvas.addEventListener('mousemove', this.onMouseMove);
 
         pauseBtn.addEventListener('click', () => this.togglePause());
@@ -103,6 +128,9 @@ window.BrickSmashGame = {
         this.level = 1;
         this.gameOver = false;
         this.paused = false;
+
+        const pauseBtn = this.container.querySelector('#bs-pause');
+        if (pauseBtn) pauseBtn.textContent = 'PAUSE [SPACE]';
 
         this.resetLevel();
         this.updateUI();
@@ -227,10 +255,8 @@ window.BrickSmashGame = {
         }
 
         // Brick collision (Fix side vs top penetration depth bug)
-        let bricksRemaining = 0;
         for (const b of this.bricks) {
             if (!b.alive) continue;
-            bricksRemaining++;
 
             if (
                 this.ball.x + this.ball.r > b.x &&
@@ -262,7 +288,8 @@ window.BrickSmashGame = {
             }
         }
 
-        if (bricksRemaining === 0) {
+        // Bug fix: accurately check if all bricks are cleared
+        if (!this.bricks.some(b => b.alive)) {
             this.level++;
             if (window.arcadeAudio) window.arcadeAudio.score();
             this.resetLevel();
@@ -317,7 +344,11 @@ window.BrickSmashGame = {
         const modal = this.container.querySelector('#bs-modal');
         const finalScore = this.container.querySelector('#bs-final-score');
         if (finalScore) finalScore.textContent = this.score;
-        if (modal) modal.classList.remove('hidden');
+        if (modal) {
+            modal.classList.remove('hidden');
+            const restartBtn = modal.querySelector('#bs-modal-restart');
+            if (restartBtn) restartBtn.focus();
+        }
     },
 
     hideModal() {
@@ -330,6 +361,8 @@ window.BrickSmashGame = {
         if (this.animId) cancelAnimationFrame(this.animId);
         window.removeEventListener('keydown', this.onKeyDown);
         window.removeEventListener('keyup', this.onKeyUp);
+        if (this.onBlur) window.removeEventListener('blur', this.onBlur);
         if (this.canvas) this.canvas.removeEventListener('mousemove', this.onMouseMove);
+        this.hideModal();
     }
 };

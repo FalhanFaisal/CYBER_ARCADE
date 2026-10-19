@@ -2,10 +2,12 @@
 window.TapTrapGame = {
     timer: null,
     moleTimer: null,
+    nextMoleTimer: null,
     score: 0,
     lives: 3,
     timeLeft: 30,
     isPlaying: false,
+    paused: false,
     lastHole: null,
 
     init(container) {
@@ -22,6 +24,7 @@ window.TapTrapGame = {
                     <div class="stat-box">SCORE: <span id="tt-score" class="stat-value">0</span></div>
                     <div class="stat-box">TIME: <span id="tt-time" class="stat-value">30s</span></div>
                     <div class="stat-box">LIVES: <span id="tt-lives" class="stat-value">❤️❤️❤️</span></div>
+                    <button class="action-btn" id="tt-pause">PAUSE [P]</button>
                     <button class="action-btn" id="tt-start">START GAME</button>
                 </div>
 
@@ -29,6 +32,7 @@ window.TapTrapGame = {
                     <div class="tt-grid">
                         ${Array(9).fill(0).map((_, i) => `
                             <div class="tt-hole" data-index="${i}">
+                                <span class="tt-key-badge">${i + 1}</span>
                                 <div class="tt-mole">
                                     <div class="tt-mole-face">👾</div>
                                 </div>
@@ -38,15 +42,16 @@ window.TapTrapGame = {
                 </div>
 
                 <div class="pc-controls-hint">
-                    <span><kbd>MOUSE CLICK</kbd> Whack Cyber Invaders before they disappear!</span>
-                    <span>Avoid Bombs 💣 to protect your health!</span>
+                    <span><kbd>1-9</kbd> or <kbd>QWE/ASD/ZXC</kbd> or <kbd>CLICK</kbd> Whack Invaders!</span>
+                    <span><kbd>P</kbd> Pause/Resume</span>
+                    <span>Avoid Bombs 💣!</span>
                 </div>
 
                 <div class="game-overlay-modal hidden" id="tt-modal">
                     <div class="modal-card">
                         <h2 class="neon-title" id="tt-modal-title">PURGE COMPLETE!</h2>
                         <p class="modal-sub">Final Score: <strong id="tt-final-score">0</strong></p>
-                        <button class="primary-btn" id="tt-play-again">PLAY AGAIN</button>
+                        <button class="primary-btn" id="tt-play-again">PLAY AGAIN [SPACE]</button>
                     </div>
                 </div>
             </div>
@@ -55,15 +60,72 @@ window.TapTrapGame = {
 
     bindEvents() {
         const startBtn = this.container.querySelector('#tt-start');
+        const pauseBtn = this.container.querySelector('#tt-pause');
         const playAgainBtn = this.container.querySelector('#tt-play-again');
         const holes = this.container.querySelectorAll('.tt-hole');
+
+        this.onKeyDown = (e) => {
+            if (e.key === ' ' || e.key === 'p' || e.key === 'P') {
+                if (e.repeat) return;
+                e.preventDefault();
+                const modal = this.container.querySelector('#tt-modal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    this.hideModal();
+                    this.startNewGame();
+                } else if (!this.isPlaying) {
+                    this.startNewGame();
+                } else if (e.key === 'p' || e.key === 'P') {
+                    this.togglePause();
+                }
+                return;
+            }
+
+            if (e.key === 'Enter') {
+                const modal = this.container.querySelector('#tt-modal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    e.preventDefault();
+                    this.hideModal();
+                    this.startNewGame();
+                }
+                return;
+            }
+
+            if (!this.isPlaying || this.paused) return;
+
+            // Direct PC desktop keyboard whack hotkeys: 1-9 and QWE/ASD/ZXC
+            const keyMap = {
+                '1': 0, '2': 1, '3': 2,
+                '4': 3, '5': 4, '6': 5,
+                '7': 6, '8': 7, '9': 8,
+                'q': 0, 'w': 1, 'e': 2,
+                'a': 3, 's': 4, 'd': 5,
+                'z': 6, 'x': 7, 'c': 8
+            };
+            const index = keyMap[e.key.toLowerCase()];
+            if (index !== undefined) {
+                e.preventDefault();
+                const targetHole = holes[index];
+                if (targetHole) {
+                    const mole = targetHole.querySelector('.tt-mole');
+                    if (mole && mole.classList.contains('up')) {
+                        this.whackMole(targetHole, mole);
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('keydown', this.onKeyDown);
 
         startBtn.addEventListener('click', () => {
             if (window.arcadeAudio) window.arcadeAudio.click();
             this.startNewGame();
         });
 
-        // Bug fix: Play Again button in modal now triggers startNewGame() directly!
+        pauseBtn.addEventListener('click', () => {
+            if (window.arcadeAudio) window.arcadeAudio.click();
+            this.togglePause();
+        });
+
         playAgainBtn.addEventListener('click', () => {
             if (window.arcadeAudio) window.arcadeAudio.click();
             this.hideModal();
@@ -71,14 +133,28 @@ window.TapTrapGame = {
         });
 
         holes.forEach(hole => {
-            hole.addEventListener('click', (e) => {
-                if (!this.isPlaying) return;
+            hole.addEventListener('click', () => {
+                if (!this.isPlaying || this.paused) return;
                 const mole = hole.querySelector('.tt-mole');
                 if (mole && mole.classList.contains('up')) {
                     this.whackMole(hole, mole);
                 }
             });
         });
+    },
+
+    togglePause() {
+        if (!this.isPlaying) return;
+        this.paused = !this.paused;
+        const pauseBtn = this.container.querySelector('#tt-pause');
+        if (pauseBtn) pauseBtn.textContent = this.paused ? 'RESUME [P]' : 'PAUSE [P]';
+
+        if (this.paused) {
+            this.stopTimers();
+        } else {
+            this.startMainTimer();
+            this.popMole();
+        }
     },
 
     startNewGame() {
@@ -144,7 +220,10 @@ window.TapTrapGame = {
         mole.classList.add('whacked');
         mole.classList.remove('up');
 
-        if (this.moleTimer) clearTimeout(this.moleTimer);
+        if (this.moleTimer) {
+            clearTimeout(this.moleTimer);
+            this.moleTimer = null;
+        }
 
         if (mole.classList.contains('bomb')) {
             if (window.arcadeAudio) window.arcadeAudio.hit();
@@ -160,9 +239,17 @@ window.TapTrapGame = {
             this.updateUI();
         }
 
-        // Bug fix: pop next mole immediately after hit for rapid arcade feel
-        if (this.isPlaying) {
-            setTimeout(() => this.popMole(), 100);
+        // Bug fix: pop next mole safely without overlapping timers
+        if (this.nextMoleTimer) {
+            clearTimeout(this.nextMoleTimer);
+            this.nextMoleTimer = null;
+        }
+
+        if (this.isPlaying && !this.paused) {
+            this.nextMoleTimer = setTimeout(() => {
+                this.nextMoleTimer = null;
+                this.popMole();
+            }, 100);
         }
     },
 
@@ -179,8 +266,10 @@ window.TapTrapGame = {
     stopTimers() {
         if (this.timer) clearInterval(this.timer);
         if (this.moleTimer) clearTimeout(this.moleTimer);
+        if (this.nextMoleTimer) clearTimeout(this.nextMoleTimer);
         this.timer = null;
         this.moleTimer = null;
+        this.nextMoleTimer = null;
     },
 
     updateUI() {
@@ -203,7 +292,11 @@ window.TapTrapGame = {
         const modal = this.container.querySelector('#tt-modal');
         const finalScore = this.container.querySelector('#tt-final-score');
         if (finalScore) finalScore.textContent = this.score;
-        if (modal) modal.classList.remove('hidden');
+        if (modal) {
+            modal.classList.remove('hidden');
+            const playAgainBtn = modal.querySelector('#tt-play-again');
+            if (playAgainBtn) playAgainBtn.focus();
+        }
     },
 
     hideModal() {
@@ -214,5 +307,7 @@ window.TapTrapGame = {
     destroy() {
         this.isPlaying = false;
         this.stopTimers();
+        window.removeEventListener('keydown', this.onKeyDown);
+        this.hideModal();
     }
 };

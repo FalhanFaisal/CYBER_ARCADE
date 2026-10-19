@@ -76,11 +76,24 @@ window.CyberPongGame = {
         this.onKeyDown = (e) => {
             if (e.key === 'w' || e.key === 'W') { this.keys.w = true; this.inputMode = 'keyboard'; }
             if (e.key === 's' || e.key === 'S') { this.keys.s = true; this.inputMode = 'keyboard'; }
-            if (e.key === 'ArrowUp') { this.keys.up = true; }
-            if (e.key === 'ArrowDown') { this.keys.down = true; }
-            if (e.key === ' ') {
+            if (e.key === 'ArrowUp') { e.preventDefault(); this.keys.up = true; }
+            if (e.key === 'ArrowDown') { e.preventDefault(); this.keys.down = true; }
+            if (e.key === ' ' || e.key === 'p' || e.key === 'P') {
+                if (e.repeat) return;
                 e.preventDefault();
-                this.togglePause();
+                if (this.gameOver) {
+                    this.hideModal();
+                    this.startNewGame();
+                } else {
+                    this.togglePause();
+                }
+            }
+            if (e.key === 'Enter') {
+                if (this.gameOver) {
+                    e.preventDefault();
+                    this.hideModal();
+                    this.startNewGame();
+                }
             }
         };
 
@@ -93,12 +106,21 @@ window.CyberPongGame = {
 
         this.onMouseMove = (e) => {
             const rect = this.canvas.getBoundingClientRect();
-            this.mouseY = e.clientY - rect.top;
+            if (!rect.height) return;
+            this.mouseY = (e.clientY - rect.top) * (this.canvas.height / rect.height);
             this.inputMode = 'mouse';
+        };
+
+        this.onBlur = () => {
+            this.keys.w = false;
+            this.keys.s = false;
+            this.keys.up = false;
+            this.keys.down = false;
         };
 
         window.addEventListener('keydown', this.onKeyDown);
         window.addEventListener('keyup', this.onKeyUp);
+        window.addEventListener('blur', this.onBlur);
         this.canvas.addEventListener('mousemove', this.onMouseMove);
 
         pauseBtn.addEventListener('click', () => this.togglePause());
@@ -124,6 +146,9 @@ window.CyberPongGame = {
         this.paused = false;
         this.gameOver = false;
 
+        const pauseBtn = this.container.querySelector('#cp-pause');
+        if (pauseBtn) pauseBtn.textContent = 'PAUSE [SPACE]';
+
         this.leftPad.y = (this.canvas.height - this.leftPad.h) / 2;
         this.rightPad.y = (this.canvas.height - this.rightPad.h) / 2;
 
@@ -138,7 +163,9 @@ window.CyberPongGame = {
         const angle = (-Math.PI / 4) + (Math.random() * Math.PI / 2);
         this.ball.speed = 6;
         this.ball.vx = direction * this.ball.speed * Math.cos(angle);
-        this.ball.vy = this.ball.speed * Math.sin(angle);
+        let vy = this.ball.speed * Math.sin(angle);
+        if (Math.abs(vy) < 1.5) vy = vy >= 0 ? 1.5 : -1.5;
+        this.ball.vy = vy;
     },
 
     togglePause() {
@@ -314,7 +341,11 @@ window.CyberPongGame = {
 
         if (titleEl) titleEl.textContent = `PLAYER ${winner} WINS!`;
         if (descEl) descEl.textContent = winner === 1 ? 'Dominant paddle performance!' : 'Better luck next match!';
-        if (modal) modal.classList.remove('hidden');
+        if (modal) {
+            modal.classList.remove('hidden');
+            const restartBtn = modal.querySelector('#cp-modal-restart');
+            if (restartBtn) restartBtn.focus();
+        }
     },
 
     hideModal() {
@@ -327,6 +358,8 @@ window.CyberPongGame = {
         if (this.animId) cancelAnimationFrame(this.animId);
         window.removeEventListener('keydown', this.onKeyDown);
         window.removeEventListener('keyup', this.onKeyUp);
+        if (this.onBlur) window.removeEventListener('blur', this.onBlur);
         if (this.canvas) this.canvas.removeEventListener('mousemove', this.onMouseMove);
+        this.hideModal();
     }
 };

@@ -26,7 +26,7 @@ window.RetroAeroGame = {
             <div class="game-wrapper retro-aero-wrapper">
                 <div class="game-header-bar">
                     <div class="stat-box">SCORE: <span id="ra-score" class="stat-value">0</span></div>
-                    <button class="action-btn" id="ra-pause">PAUSE [SPACE]</button>
+                    <button class="action-btn" id="ra-pause">PAUSE [P]</button>
                     <button class="action-btn" id="ra-restart">RESET</button>
                 </div>
 
@@ -35,14 +35,15 @@ window.RetroAeroGame = {
                 </div>
 
                 <div class="pc-controls-hint">
-                    <span><kbd>SPACE</kbd> or <kbd>↑</kbd> or <kbd>CLICK</kbd> Thrust Rocket Up</span>
+                    <span><kbd>SPACE</kbd> / <kbd>↑</kbd> or <kbd>CLICK</kbd> Thrust Rocket Up</span>
+                    <span><kbd>P</kbd> Pause/Resume</span>
                 </div>
 
                 <div class="game-overlay-modal hidden" id="ra-modal">
                     <div class="modal-card">
                         <h2 class="neon-title" id="ra-modal-title">ROCKET CRASHED!</h2>
                         <p class="modal-sub">Final Score: <strong id="ra-final-score">0</strong></p>
-                        <button class="primary-btn" id="ra-modal-restart">FLY AGAIN</button>
+                        <button class="primary-btn" id="ra-modal-restart">FLY AGAIN [SPACE]</button>
                     </div>
                 </div>
             </div>
@@ -67,6 +68,20 @@ window.RetroAeroGame = {
                     this.flap();
                 } else if (this.paused) {
                     this.togglePause();
+                } else if (this.gameOver) {
+                    this.hideModal();
+                    this.startNewGame();
+                }
+            }
+            if (e.key === 'p' || e.key === 'P') {
+                e.preventDefault();
+                this.togglePause();
+            }
+            if (e.key === 'Enter') {
+                if (this.gameOver) {
+                    e.preventDefault();
+                    this.hideModal();
+                    this.startNewGame();
                 }
             }
         };
@@ -93,6 +108,9 @@ window.RetroAeroGame = {
         this.paused = false;
         this.gameOver = false;
 
+        const pauseBtn = this.container.querySelector('#ra-pause');
+        if (pauseBtn) pauseBtn.textContent = 'PAUSE [P]';
+
         this.rocket.y = this.canvas.height / 2;
         this.rocket.vy = 0;
         this.pipes = [];
@@ -111,7 +129,7 @@ window.RetroAeroGame = {
         if (this.gameOver) return;
         this.paused = !this.paused;
         const pauseBtn = this.container.querySelector('#ra-pause');
-        if (pauseBtn) pauseBtn.textContent = this.paused ? 'RESUME [SPACE]' : 'PAUSE [SPACE]';
+        if (pauseBtn) pauseBtn.textContent = this.paused ? 'RESUME [P]' : 'PAUSE [P]';
         if (!this.paused) this.startLoop();
     },
 
@@ -267,7 +285,11 @@ window.RetroAeroGame = {
         const modal = this.container.querySelector('#ra-modal');
         const finalScore = this.container.querySelector('#ra-final-score');
         if (finalScore) finalScore.textContent = this.score;
-        if (modal) modal.classList.remove('hidden');
+        if (modal) {
+            modal.classList.remove('hidden');
+            const restartBtn = modal.querySelector('#ra-modal-restart');
+            if (restartBtn) restartBtn.focus();
+        }
     },
 
     hideModal() {
@@ -280,5 +302,6 @@ window.RetroAeroGame = {
         if (this.animId) cancelAnimationFrame(this.animId);
         window.removeEventListener('keydown', this.onKeyDown);
         if (this.canvas) this.canvas.removeEventListener('click', this.onCanvasClick);
+        this.hideModal();
     }
 };

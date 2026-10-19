@@ -78,11 +78,54 @@ window.ArcadeHub = {
         }
     ],
 
+    bypassedDesktopCheck: false,
+
     init() {
         this.loadHighScores();
         this.renderLobbyGrid();
         this.bindGlobalHotkeys();
         this.bindHeaderControls();
+        this.initDesktopGatekeeper();
+    },
+
+    initDesktopGatekeeper() {
+        const bypassBtn = document.getElementById('btn-bypass-gatekeeper');
+        if (bypassBtn) {
+            bypassBtn.addEventListener('click', () => {
+                this.bypassedDesktopCheck = true;
+                const overlay = document.getElementById('desktop-only-gatekeeper');
+                if (overlay) overlay.classList.add('hidden');
+            });
+        }
+
+        const evaluateDevice = () => {
+            if (this.bypassedDesktopCheck) return;
+
+            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i.test(navigator.userAgent);
+            const isTouchOnly = (window.matchMedia && window.matchMedia('(pointer: coarse) and (hover: none)').matches);
+            const isNarrowScreen = window.innerWidth < 960;
+
+            const resEl = document.getElementById('gatekeeper-res');
+            if (resEl) {
+                resEl.textContent = `CURRENT RESOLUTION: ${window.innerWidth} × ${window.innerHeight}px`;
+            }
+
+            const gatekeeper = document.getElementById('desktop-only-gatekeeper');
+            if (gatekeeper) {
+                if (isMobileUA || isTouchOnly || isNarrowScreen) {
+                    gatekeeper.classList.remove('hidden');
+                    if (this.currentGame && typeof this.currentGame.togglePause === 'function' && !this.currentGame.paused) {
+                        this.currentGame.togglePause();
+                    }
+                } else {
+                    gatekeeper.classList.add('hidden');
+                }
+            }
+        };
+
+        window.addEventListener('resize', evaluateDevice);
+        window.addEventListener('orientationchange', evaluateDevice);
+        evaluateDevice();
     },
 
     loadHighScores() {
@@ -113,7 +156,7 @@ window.ArcadeHub = {
         gridEl.innerHTML = this.games.map(game => {
             const highScore = this.highScores[game.id] || 0;
             return `
-                <div class="game-card" data-id="${game.id}">
+                <div class="game-card" data-id="${game.id}" tabindex="0" role="button" aria-label="Play ${game.title}">
                     <div class="card-banner">
                         <span class="game-icon">${game.icon}</span>
                         <span class="card-tag">${game.tag}</span>
@@ -123,15 +166,41 @@ window.ArcadeHub = {
                         <p class="card-desc">${game.desc}</p>
                         <div class="card-footer">
                             <span class="high-score-tag">BEST: 🏆 ${highScore}</span>
-                            <button class="play-btn" onclick="ArcadeHub.launchGame('${game.id}')">PLAY NOW</button>
+                            <button class="play-btn" onclick="event.stopPropagation(); ArcadeHub.launchGame('${game.id}')">PLAY NOW</button>
                         </div>
                     </div>
                 </div>
             `;
         }).join('');
+
+        const cards = gridEl.querySelectorAll('.game-card');
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                const id = card.dataset.id;
+                if (id) this.launchGame(id);
+            });
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    const id = card.dataset.id;
+                    if (id) this.launchGame(id);
+                }
+            });
+        });
     },
 
     launchGame(gameId) {
+        if (!this.bypassedDesktopCheck) {
+            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i.test(navigator.userAgent);
+            const isTouchOnly = (window.matchMedia && window.matchMedia('(pointer: coarse) and (hover: none)').matches);
+            const isNarrowScreen = window.innerWidth < 960;
+            if (isMobileUA || isTouchOnly || isNarrowScreen) {
+                const gatekeeper = document.getElementById('desktop-only-gatekeeper');
+                if (gatekeeper) gatekeeper.classList.remove('hidden');
+                return;
+            }
+        }
+
         const gameConfig = this.games.find(g => g.id === gameId);
         if (!gameConfig) return;
 
@@ -169,6 +238,7 @@ window.ArcadeHub = {
             const stage = document.getElementById('game-stage');
             if (overlay) overlay.classList.add('hidden');
             if (stage) stage.innerHTML = '';
+            this.renderLobbyGrid();
         }
     },
 
@@ -179,6 +249,14 @@ window.ArcadeHub = {
                 if (this.currentGame) {
                     if (window.arcadeAudio) window.arcadeAudio.click();
                     this.exitActiveGame(true);
+                }
+            }
+            // P key to pause / resume active game
+            if (e.key === 'p' || e.key === 'P') {
+                if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                    if (this.currentGame && typeof this.currentGame.togglePause === 'function') {
+                        this.currentGame.togglePause();
+                    }
                 }
             }
             // M key to toggle audio
@@ -206,6 +284,13 @@ window.ArcadeHub = {
         if (exitBtn) exitBtn.addEventListener('click', () => {
             if (window.arcadeAudio) window.arcadeAudio.click();
             this.exitActiveGame(true);
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.getElementById('btn-toggle-fs');
+            if (btn) {
+                btn.innerHTML = document.fullscreenElement ? '🗗 WINDOWED [F]' : '🖥️ FULLSCREEN [F]';
+            }
         });
     },
 
